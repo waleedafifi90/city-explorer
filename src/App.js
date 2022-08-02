@@ -6,6 +6,7 @@ import DisplayedInformation from './components/DiplayedInformation';
 import Map from './components/Map';
 import ErrorComp from './components/ErrorComp';
 import Weather from './components/Weather';
+import Movie from './components/Movie';
 
 class App extends Component {
   constructor(props) {
@@ -19,7 +20,9 @@ class App extends Component {
       errorMsg: '',
       displayErr: false,
       weather: [],
-      isWeather: false
+      isWeather: false,
+      movies: [],
+      isMovie: false
     }
   }
 
@@ -42,7 +45,9 @@ class App extends Component {
       })
   
       this.displayMap(city.data[0].lat, city.data[0].lon);
-      this.displayWeather(searchQuery, city.data[0].lat, city.data[0].lon)
+      this.displayWeather(searchQuery, city.data[0].lat, city.data[0].lon);
+      this.fetchMovies(searchQuery);
+
     } catch(error) {
       console.log(error)
       this.setState({
@@ -63,7 +68,7 @@ class App extends Component {
 
   displayWeather = async (searchQuery, lat, lon) => {
     try {
-      const weatherData = await axios.get(`http://localhost:3001/weather?searchQuery=${searchQuery}&lat=${lat}&lon=${lon}`);
+      const weatherData = await axios.get(`https://city-explor-api.herokuapp.com/weather?searchQuery=${searchQuery}&lat=${lat}&lon=${lon}`);
       this.setState({
         isWeather: true,
         weather: weatherData.data
@@ -79,6 +84,20 @@ class App extends Component {
 
   }
 
+  fetchMovies = async (searchQuery) => {
+    try {
+      const movieData = await axios.get(`https://city-explor-api.herokuapp.com/movies?searchQuery=${searchQuery}`);
+      this.setState({
+        movies: movieData.data,
+        isMovie: true
+      })
+    } catch(error) {
+      this.setState({
+        isMovie: false
+      })
+    }
+  }
+
   render() {
     return (
       <div className="App">
@@ -92,6 +111,11 @@ class App extends Component {
 
         {this.state.isWeather && 
           <Weather weatherInformation={this.state.weather}/>
+        }
+
+        {this.state.isMovie && 
+          <Movie movie={this.state.movies}/>
+
         }
 
         {this.state.displayErr && 
