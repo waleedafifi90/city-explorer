@@ -5,6 +5,7 @@ import axios from 'axios';
 import DisplayedInformation from './components/DiplayedInformation';
 import Map from './components/Map';
 import ErrorComp from './components/ErrorComp';
+import Weather from './components/Weather';
 
 class App extends Component {
   constructor(props) {
@@ -16,7 +17,9 @@ class App extends Component {
       map_src: '',
       displayInfo: false,
       errorMsg: '',
-      displayErr: false
+      displayErr: false,
+      weather: [],
+      isWeather: false
     }
   }
 
@@ -39,6 +42,7 @@ class App extends Component {
       })
   
       this.displayMap(city.data[0].lat, city.data[0].lon);
+      this.displayWeather(searchQuery, city.data[0].lat, city.data[0].lon)
     } catch(error) {
       console.log(error)
       this.setState({
@@ -57,6 +61,24 @@ class App extends Component {
     })
   }
 
+  displayWeather = async (searchQuery, lat, lon) => {
+    try {
+      const weatherData = await axios.get(`http://localhost:3001/weather?searchQuery=${searchQuery}&lat=${lat}&lon=${lon}`);
+      this.setState({
+        isWeather: true,
+        weather: weatherData.data
+      })
+    } catch (error) {
+      this.setState({
+        errorMsg: error.response.status + ': ' + error.response.data.error,
+        displayErr: true,
+        isWeather: false,
+        displayInfo: false
+      })
+    }
+
+  }
+
   render() {
     return (
       <div className="App">
@@ -66,6 +88,10 @@ class App extends Component {
             <DisplayedInformation cityInfo={this.state}/>
             <Map mapSource={this.state.map_src}/>
           </>
+        }
+
+        {this.state.isWeather && 
+          <Weather weatherInformation={this.state.weather}/>
         }
 
         {this.state.displayErr && 
